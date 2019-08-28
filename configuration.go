@@ -20,6 +20,7 @@ type Configuration struct {
 	MaxIdleConnsPerHost   int
 	UseBaseAuth           bool
 	UseHTTPS              bool
+	TLSClientSkipSecurity bool
 }
 
 func NewConfiguration() *Configuration {
