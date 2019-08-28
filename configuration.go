@@ -12,11 +12,13 @@ type Configuration struct {
 	Addr                  string // host:port
 	BasePath              string // initial base path to be appended
 	User                  string // user.name to use to connect
+	Password              string
 	ConnectionTimeout     time.Duration
 	DisableKeepAlives     bool
 	DisableCompression    bool
 	ResponseHeaderTimeout time.Duration
 	MaxIdleConnsPerHost   int
+	UseBaseAuth           bool
 }
 
 func NewConfiguration() *Configuration {

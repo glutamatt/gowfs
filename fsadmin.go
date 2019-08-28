@@ -19,6 +19,10 @@ func (fs *FileSystem) Rename(source Path, destination Path) (bool, error) {
 	}
 
 	req, _ := http.NewRequest("PUT", u.String(), nil)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
+
 	hdfsData, err := requestHdfsData(fs.client, *req)
 	if err != nil {
 		return false, err
@@ -43,6 +47,10 @@ func (fs *FileSystem) Delete(path Path, recursive bool) (bool, error) {
 	}
 
 	req, _ := http.NewRequest("DELETE", u.String(), nil)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
+
 	hdfsData, err := requestHdfsData(fs.client, *req)
 	if err != nil {
 		return false, err
@@ -70,6 +78,10 @@ func (fs *FileSystem) SetPermission(path Path, permission os.FileMode) (bool, er
 	}
 
 	req, _ := http.NewRequest("PUT", u.String(), nil)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
+
 	rsp, err := fs.client.Do(req)
 	if err != nil {
 		return false, err
@@ -98,6 +110,10 @@ func (fs *FileSystem) SetOwner(path Path, owner string, group string) (bool, err
 	}
 
 	req, _ := http.NewRequest("PUT", u.String(), nil)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
+
 	rsp, err := fs.client.Do(req)
 	if err != nil {
 		return false, err
@@ -127,6 +143,10 @@ func (fs *FileSystem) SetReplication(path Path, replication uint16) (bool, error
 		return false, err
 	}
 	req, _ := http.NewRequest("PUT", u.String(), nil)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
+
 	hdfsData, err := requestHdfsData(fs.client, *req)
 	if err != nil {
 		return false, err
@@ -153,6 +173,10 @@ func (fs *FileSystem) SetTimes(path Path, accesstime int64, modificationtime int
 	}
 
 	req, _ := http.NewRequest("PUT", u.String(), nil)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
+
 	rsp, err := fs.client.Do(req)
 	if err != nil {
 		return false, err
@@ -180,6 +204,10 @@ func (fs *FileSystem) MkDirs(p Path, fm os.FileMode) (bool, error) {
 	}
 
 	req, _ := http.NewRequest("PUT", u.String(), nil)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
+
 	hdfsData, err := requestHdfsData(fs.client, *req)
 	if err != nil {
 		return false, err
@@ -209,6 +237,10 @@ func (fs *FileSystem) CreateSymlink(dest Path, link Path, createParent bool) (bo
 	}
 
 	req, _ := http.NewRequest("PUT", u.String(), nil)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
+
 	rsp, err := fs.client.Do(req)
 
 	defer rsp.Body.Close()
@@ -230,6 +262,10 @@ func (fs *FileSystem) GetFileStatus(p Path) (FileStatus, error) {
 	}
 
 	req, _ := http.NewRequest("GET", u.String(), nil)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
+
 	hdfsData, err := requestHdfsData(fs.client, *req)
 	if err != nil {
 		return FileStatus{}, err
@@ -249,6 +285,10 @@ func (fs *FileSystem) ListStatus(p Path) ([]FileStatus, error) {
 	}
 
 	req, _ := http.NewRequest("GET", u.String(), nil)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
+
 	hdfsData, err := requestHdfsData(fs.client, *req)
 	if err != nil {
 		return nil, err
@@ -267,6 +307,10 @@ func (fs *FileSystem) GetContentSummary(p Path) (ContentSummary, error) {
 	}
 
 	req, _ := http.NewRequest("GET", u.String(), nil)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
+
 	hdfsData, err := requestHdfsData(fs.client, *req)
 	if err != nil {
 		return ContentSummary{}, err
@@ -289,6 +333,10 @@ func (fs *FileSystem) GetFileChecksum(p Path) (FileChecksum, error) {
 	}
 
 	req, _ := http.NewRequest("GET", u.String(), nil)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
+
 	hdfsData, err := requestHdfsData(fs.client, *req)
 	if err != nil {
 		return FileChecksum{}, err

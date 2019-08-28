@@ -56,6 +56,10 @@ func (fs *FileSystem) Create(
 
 	// take over default transport to avoid redirect
 	req, _ := http.NewRequest("PUT", u.String(), nil)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
+
 	rsp, err := fs.transport.RoundTrip(req)
 	if err != nil {
 		return false, err
@@ -69,6 +73,9 @@ func (fs *FileSystem) Create(
 	}
 
 	req, _ = http.NewRequest("PUT", u.String(), data)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
 	// set content type
 	if contenttype != "" {
 		req.Header.Set("Content-Type", contenttype)
@@ -119,6 +126,10 @@ func (fs *FileSystem) Open(p Path, offset, length int64, buffSize int) (io.ReadC
 	}
 
 	req, _ := http.NewRequest("GET", u.String(), nil)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
+
 	rsp, err := fs.client.Do(req)
 	if err != nil {
 		return nil, err
@@ -158,6 +169,10 @@ func (fs *FileSystem) Append(data io.Reader, p Path, buffersize int) (bool, erro
 
 	// take over default transport to avoid redirect
 	req, _ := http.NewRequest("POST", u.String(), nil)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
+
 	rsp, err := fs.transport.RoundTrip(req)
 	if err != nil {
 		return false, err
@@ -171,6 +186,10 @@ func (fs *FileSystem) Append(data io.Reader, p Path, buffersize int) (bool, erro
 	}
 
 	req, _ = http.NewRequest("POST", u.String(), data)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
+
 	rsp, err = fs.client.Do(req)
 	if err != nil {
 		return false, err
@@ -203,6 +222,10 @@ func (fs *FileSystem) Concat(target Path, sources []string) (bool, error) {
 	}
 
 	req, _ := http.NewRequest("POST", u.String(), nil)
+	if fs.Config.UseBaseAuth {
+		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+	}
+
 	rsp, err := fs.client.Do(req)
 	if err != nil {
 		return false, err
