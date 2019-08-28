@@ -19,6 +19,7 @@ type Configuration struct {
 	ResponseHeaderTimeout time.Duration
 	MaxIdleConnsPerHost   int
 	UseBaseAuth           bool
+	UseHTTPS              bool
 }
 
 func NewConfiguration() *Configuration {
@@ -35,7 +36,12 @@ func (conf *Configuration) GetNameNodeUrl() (*url.URL, error) {
 		return nil, errors.New("Configuration namenode address not set.")
 	}
 
-	var urlStr string = fmt.Sprintf("http://%s%s%s", conf.Addr, WebHdfsVer, conf.BasePath)
+	var protocol = "http"
+	if conf.UseHTTPS {
+		protocol = "https"
+	}
+
+	var urlStr = fmt.Sprintf("%s://%s%s%s", protocol, conf.Addr, WebHdfsVer, conf.BasePath)
 
 	if &conf.User == nil || len(conf.User) == 0 {
 		u, _ := user.Current()
