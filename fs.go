@@ -75,16 +75,19 @@ func NewFileSystem(conf Configuration) (*FileSystem, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Error in cookiejar.New: %v", err)
 		}
+
 		fs.client.Jar = jar
-		if _, err := fs.ListStatus(Path{Name: "/"}); err != nil {
-			return nil, fmt.Errorf("Error in fs.GetContentSummary: %v", err)
+
+		baseURL, err := buildRequestUrl(conf, nil, nil)
+		if err != nil {
+			return nil, fmt.Errorf("Error in buildRequestUrl: %v", err)
 		}
 
-		nodeURL, err := conf.GetNameNodeUrl()
-		if err != nil {
-			return nil, fmt.Errorf("Error in conf.GetNameNodeUrl: %v", err)
+		if _, err := fs.client.Get(baseURL.String()); err != nil {
+			return nil, fmt.Errorf("Error in fs.client.Get(baseURL.String()): %v", err)
 		}
-		fmt.Printf("%#v\n", fs.client.Jar.Cookies(nodeURL))
+
+		fmt.Printf("%#v\n", fs.client.Jar.Cookies(baseURL))
 	}
 
 	//fs.client.Jar = cookiejar.New()
