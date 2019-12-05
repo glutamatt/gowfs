@@ -73,16 +73,16 @@ func NewFileSystem(conf Configuration) (*FileSystem, error) {
 	if conf.EnableKnoxAuth {
 		jar, err := cookiejar.New(nil)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Error in cookiejar.New: %v", err)
 		}
 		fs.client.Jar = jar
 		if _, err := fs.GetContentSummary(Path{Name: "/"}); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Error in fs.GetContentSummary: %v", err)
 		}
 
 		nodeURL, err := conf.GetNameNodeUrl()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Error in conf.GetNameNodeUrl: %v", err)
 		}
 		fmt.Printf("%#v\n", fs.client.Jar.Cookies(nodeURL))
 	}
