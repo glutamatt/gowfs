@@ -5,11 +5,15 @@ See https://github.com/vladimirvivien/gowfs.
 */
 package gowfs
 
-import "encoding/json"
-import "net"
-import "net/http"
-import "net/url"
-import "io/ioutil"
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net"
+	"net/http"
+	"net/http/cookiejar"
+	"net/url"
+)
 
 const (
 	OP_OPEN                  = "OPEN"
@@ -65,6 +69,25 @@ func NewFileSystem(conf Configuration) (*FileSystem, error) {
 	fs.client = http.Client{
 		Transport: fs.transport,
 	}
+
+	if conf.EnableKnoxAuth {
+		jar, err := cookiejar.New(nil)
+		if err != nil {
+			return nil, err
+		}
+		fs.client.Jar = jar
+		if _, err := fs.GetHomeDirectory(); err != nil {
+			return nil, err
+		}
+
+		nodeURL, err := conf.GetNameNodeUrl()
+		if err != nil {
+			return nil, err
+		}
+		fmt.Printf("%#v\n", fs.client.Jar.Cookies(nodeURL))
+	}
+
+	//fs.client.Jar = cookiejar.New()
 	return fs, nil
 }
 
