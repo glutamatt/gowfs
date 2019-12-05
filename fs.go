@@ -77,24 +77,30 @@ func NewFileSystem(conf Configuration) (*FileSystem, error) {
 			return nil, fmt.Errorf("Error in cookiejar.New: %v", err)
 		}
 		fs.client.Jar = jar
-		baseURL, err := buildRequestUrl(conf, &Path{}, &map[string]string{"op": OP_LISTSTATUS})
+		baseURL, err := buildRequestUrl(conf, &Path{Name: "/"}, &map[string]string{"op": OP_LISTSTATUS})
 		if err != nil {
 			return nil, fmt.Errorf("Error in buildRequestUrl: %v", err)
 		}
 
-		if resp, err := fs.client.Get(baseURL.String()); err != nil {
+		req, err := http.NewRequest("GET", baseURL.String(), nil)
+		if err != nil {
+			return nil, fmt.Errorf("Error in http.NewRequest(%s): %v", baseURL.String(), err)
+		}
+
+		req.SetBasicAuth(conf.User, conf.Password)
+
+		if resp, err := fs.client.Do(req); err != nil {
 			return nil, fmt.Errorf("Error in fs.client.Get(baseURL.String()): %v", err)
 		} else {
 			if resp.StatusCode > 299 {
 				dump, _ := httputil.DumpResponse(resp, true)
-				return nil, fmt.Errorf("Error in response of fs.client.Get(baseURL.String()): %s ", string(dump))
+				return nil, fmt.Errorf("Error in response of fs.client.Get(%s): %s ", req.URL.String(), string(dump))
 			}
 		}
 
 		fmt.Printf("%#v\n", fs.client.Jar.Cookies(baseURL))
 	}
 
-	//fs.client.Jar = cookiejar.New()
 	return fs, nil
 }
 
