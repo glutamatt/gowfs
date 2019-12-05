@@ -76,7 +76,7 @@ func NewFileSystem(conf Configuration) (*FileSystem, error) {
 			return nil, fmt.Errorf("Error in cookiejar.New: %v", err)
 		}
 		fs.client.Jar = jar
-		if _, err := fs.GetContentSummary(Path{Name: "/"}); err != nil {
+		if _, err := fs.ListStatus(Path{Name: "/"}); err != nil {
 			return nil, fmt.Errorf("Error in fs.GetContentSummary: %v", err)
 		}
 
