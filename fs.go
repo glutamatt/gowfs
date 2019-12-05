@@ -12,6 +12,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/cookiejar"
+	"net/http/httputil"
 	"net/url"
 )
 
@@ -75,16 +76,19 @@ func NewFileSystem(conf Configuration) (*FileSystem, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Error in cookiejar.New: %v", err)
 		}
-
 		fs.client.Jar = jar
-
-		baseURL, err := buildRequestUrl(conf, nil, nil)
+		baseURL, err := buildRequestUrl(conf, &Path{}, &map[string]string{"op": OP_LISTSTATUS})
 		if err != nil {
 			return nil, fmt.Errorf("Error in buildRequestUrl: %v", err)
 		}
 
-		if _, err := fs.client.Get(baseURL.String()); err != nil {
+		if resp, err := fs.client.Get(baseURL.String()); err != nil {
 			return nil, fmt.Errorf("Error in fs.client.Get(baseURL.String()): %v", err)
+		} else {
+			if resp.StatusCode > 299 {
+				dump, _ := httputil.DumpResponse(resp, true)
+				return nil, fmt.Errorf("Error in response of fs.client.Get(baseURL.String()): %s ", string(dump))
+			}
 		}
 
 		fmt.Printf("%#v\n", fs.client.Jar.Cookies(baseURL))
