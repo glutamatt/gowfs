@@ -9,11 +9,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httputil"
 	"net/url"
+	"time"
 )
 
 const (
@@ -71,37 +73,64 @@ func NewFileSystem(conf Configuration) (*FileSystem, error) {
 		Transport: fs.transport,
 	}
 
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		return nil, fmt.Errorf("cookiejar.New: %v", err)
+	}
+	fs.client.Jar = jar
+
 	if conf.EnableKnoxAuth {
-		jar, err := cookiejar.New(nil)
-		if err != nil {
-			return nil, fmt.Errorf("Error in cookiejar.New: %v", err)
+		if err := fs.auth(); err != nil {
+			return nil, fmt.Errorf("fs.Auth: %v", err)
 		}
-		fs.client.Jar = jar
-		baseURL, err := buildRequestUrl(conf, &Path{Name: "/"}, &map[string]string{"op": OP_LISTSTATUS})
-		if err != nil {
-			return nil, fmt.Errorf("Error in buildRequestUrl: %v", err)
-		}
-
-		req, err := http.NewRequest("GET", baseURL.String(), nil)
-		if err != nil {
-			return nil, fmt.Errorf("Error in http.NewRequest(%s): %v", baseURL.String(), err)
-		}
-
-		req.SetBasicAuth(conf.User, conf.Password)
-
-		if resp, err := fs.client.Do(req); err != nil {
-			return nil, fmt.Errorf("Error in fs.client.Get(baseURL.String()): %v", err)
-		} else {
-			if resp.StatusCode > 299 {
-				dump, _ := httputil.DumpResponse(resp, true)
-				return nil, fmt.Errorf("Error in response of fs.client.Get(%s): %s ", req.URL.String(), string(dump))
+		go func() {
+			for {
+				time.Sleep(time.Minute)
+				if err := fs.auth(); err != nil {
+					log.Printf("fs.Auth: %v", err)
+				}
 			}
-		}
-
-		fmt.Printf("%#v\n", fs.client.Jar.Cookies(baseURL))
+		}()
 	}
 
 	return fs, nil
+}
+
+func (fs *FileSystem) auth() error {
+	baseURL, err := buildRequestUrl(fs.Config, &Path{Name: "/"}, &map[string]string{"op": OP_LISTSTATUS})
+	if err != nil {
+		return fmt.Errorf("buildRequestUrl: %v", err)
+	}
+
+	req, err := http.NewRequest("GET", baseURL.String(), nil)
+	if err != nil {
+		return fmt.Errorf("http.NewRequest(%s): %v", baseURL.String(), err)
+	}
+
+	req.SetBasicAuth(fs.Config.User, fs.Config.Password)
+
+	resp, err := fs.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("fs.client.Get(baseURL.String()): %v", err)
+	}
+	if resp.StatusCode > 299 {
+		dump, _ := httputil.DumpResponse(resp, true)
+		return fmt.Errorf("response of fs.client.Get(%s): %s ", req.URL.String(), string(dump))
+	}
+
+	hasSessionCookie := false
+	for _, cookie := range fs.client.Jar.Cookies(baseURL) {
+		if cookie.Name == "JSESSIONID" {
+			hasSessionCookie = true
+			break
+		}
+	}
+
+	if hasSessionCookie {
+		return nil
+	}
+
+	return fmt.Errorf("session cookie not found in jar")
 }
 
 // Builds the canonical URL used for remote request
