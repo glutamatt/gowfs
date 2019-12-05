@@ -76,7 +76,7 @@ func NewFileSystem(conf Configuration) (*FileSystem, error) {
 			return nil, err
 		}
 		fs.client.Jar = jar
-		if _, err := fs.GetHomeDirectory(); err != nil {
+		if _, err := fs.GetContentSummary(Path{Name: "/"}); err != nil {
 			return nil, err
 		}
 
