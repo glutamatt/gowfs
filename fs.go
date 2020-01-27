@@ -9,11 +9,12 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
+	"io/ioutil"
+	"net"
+	"net/http"
+	"net/http/cookiejar"
+	"net/url"
 )
-import "net"
-import "net/http"
-import "net/url"
-import "io/ioutil"
 
 const (
 	OP_OPEN                  = "OPEN"
@@ -72,6 +73,13 @@ func NewFileSystem(conf Configuration) (*FileSystem, error) {
 	fs.client = http.Client{
 		Transport: fs.transport,
 	}
+
+	if jar, err := cookiejar.New(nil); err == nil {
+		fs.client.Jar = jar
+	} else {
+		panic(err)
+	}
+
 	return fs, nil
 }
 
