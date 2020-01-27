@@ -9,6 +9,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -146,7 +147,7 @@ func requestHdfsData(client http.Client, req http.Request) (HdfsJsonData, error)
 		return HdfsJsonData{}, err
 	}
 	if rsp.StatusCode != http.StatusOK {
-		return HdfsJsonData{}, errBadStatusCode
+		return HdfsJsonData{}, fmt.Errorf("%w : (%d) %s", errBadStatusCode, rsp.StatusCode, rsp.Status)
 	}
 	defer rsp.Body.Close()
 	hdfsData, err := responseToHdfsData(rsp)
