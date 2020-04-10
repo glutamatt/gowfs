@@ -1,14 +1,17 @@
 package main
 
-import "fmt"
-import "flag"
-import "log"
-import "os"
-import "path"
-import "os/user"
-import "strconv"
-import "time"
-import "vladimirvivien/gowfs"
+import (
+	"flag"
+	"fmt"
+	"log"
+	"os"
+	"os/user"
+	"path"
+	"strconv"
+	"time"
+
+	"github.com/glutamatt/gowfs"
+)
 
 var uname string
 
@@ -38,7 +41,7 @@ func main() {
 	testDir := *path + "/test"
 	createTestDir(fs, testDir)
 	remoteFile := uploadTestFile(fs, *testData, testDir)
-	appendToRemoteFile(fs, *testData, remoteFile)
+	appendToRemoteFile(fs, *testData, remoteFile, "text")
 	newRemoteFile := testDir + "/" + "peace-and-war.txt"
 	renameRemoteFile(fs, remoteFile, newRemoteFile)
 	changeOwner(fs, newRemoteFile)
@@ -194,13 +197,13 @@ func changeMod(fs *gowfs.FileSystem, hdfsPath string) {
 	}
 }
 
-func appendToRemoteFile(fs *gowfs.FileSystem, localFile, hdfsPath string) {
+func appendToRemoteFile(fs *gowfs.FileSystem, localFile, hdfsPath, contenttype string) {
 	stat, err := fs.GetFileStatus(gowfs.Path{Name: hdfsPath})
 	if err != nil {
 		log.Fatal("Unable to get file info for ", hdfsPath, ":", err.Error())
 	}
 	shell := gowfs.FsShell{FileSystem: fs}
-	_, err = shell.AppendToFile([]string{localFile}, hdfsPath)
+	_, err = shell.AppendToFile([]string{localFile}, hdfsPath, contenttype)
 	if err != nil {
 		log.Fatal("AppendToFile() failed: ", err.Error())
 	}
