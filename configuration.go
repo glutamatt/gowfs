@@ -1,10 +1,12 @@
 package gowfs
 
-import "fmt"
-import "errors"
-import "time"
-import "net/url"
-import "os/user"
+import (
+	"errors"
+	"fmt"
+	"net/url"
+	"os/user"
+	"time"
+)
 
 const WebHdfsVer string = "/webhdfs/v1"
 
@@ -21,6 +23,7 @@ type Configuration struct {
 	UseBaseAuth           bool
 	UseHTTPS              bool
 	TLSClientSkipSecurity bool
+	Retries               func() []time.Duration
 }
 
 func NewConfiguration() *Configuration {
@@ -29,6 +32,7 @@ func NewConfiguration() *Configuration {
 		DisableKeepAlives:     false,
 		DisableCompression:    true,
 		ResponseHeaderTimeout: time.Second * 17,
+		Retries:               Retries(3, time.Second, Backoff(2)),
 	}
 }
 

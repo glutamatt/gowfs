@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"time"
 )
 
 const (
@@ -84,6 +85,21 @@ func NewFileSystem(conf Configuration) (*FileSystem, error) {
 	return fs, nil
 }
 
+func Backoff(coef float64) func(time.Duration) time.Duration {
+	return func(prev time.Duration) time.Duration { return time.Duration(float64(prev) * coef) }
+}
+
+func Retries(tries int, delay time.Duration, backoff func(time.Duration) time.Duration) func() []time.Duration {
+	return func() []time.Duration {
+		d := make([]time.Duration, tries)
+		d[0] = delay
+		for i := 1; i < tries; i++ {
+			d[i] = backoff(d[i-1])
+		}
+		return d
+	}
+}
+
 // Builds the canonical URL used for remote request
 func buildRequestUrl(conf Configuration, p *Path, params *map[string]string) (*url.URL, error) {
 	u, err := conf.GetNameNodeUrl()
@@ -143,9 +159,19 @@ func responseToHdfsData(rsp *http.Response) (HdfsJsonData, error) {
 
 func (fs *FileSystem) requestHdfsData(req http.Request) (HdfsJsonData, error) {
 	rsp, err := fs.client.Do(&req)
+	if err != nil && fs.Config.Retries != nil {
+		for _, delay := range fs.Config.Retries() {
+			time.Sleep(delay)
+			if rsp, err = fs.client.Do(&req); err == nil {
+				break
+			}
+		}
+	}
+
 	if err != nil {
 		return HdfsJsonData{}, err
 	}
+
 	if rsp.StatusCode != http.StatusOK {
 		return HdfsJsonData{}, fmt.Errorf("%w : (%d) %s", errBadStatusCode, rsp.StatusCode, rsp.Status)
 	}
