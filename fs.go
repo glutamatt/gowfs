@@ -141,8 +141,8 @@ func responseToHdfsData(rsp *http.Response) (HdfsJsonData, error) {
 	return makeHdfsData(body)
 }
 
-func requestHdfsData(client http.Client, req http.Request) (HdfsJsonData, error) {
-	rsp, err := client.Do(&req)
+func (fs *FileSystem) requestHdfsData(req http.Request) (HdfsJsonData, error) {
+	rsp, err := fs.client.Do(&req)
 	if err != nil {
 		return HdfsJsonData{}, err
 	}

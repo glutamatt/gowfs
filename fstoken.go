@@ -1,7 +1,9 @@
 package gowfs
 
-import "fmt"
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 func (fs *FileSystem) GetDelegationToken(renewer string) (Token, error) {
 	params := map[string]string{"op": OP_GETDELEGATIONTOKEN, "renewer": renewer}
@@ -16,7 +18,7 @@ func (fs *FileSystem) GetDelegationToken(renewer string) (Token, error) {
 		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
 	}
 
-	hdfsData, err := requestHdfsData(fs.client, *req)
+	hdfsData, err := fs.requestHdfsData(*req)
 	if err != nil {
 		return Token{}, err
 	}
@@ -37,7 +39,7 @@ func (fs *FileSystem) GetDelegationTokens(renewer string) ([]Token, error) {
 		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
 	}
 
-	hdfsData, err := requestHdfsData(fs.client, *req)
+	hdfsData, err := fs.requestHdfsData(*req)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +60,7 @@ func (fs *FileSystem) RenewDelegationToken(token string) (int64, error) {
 		req.SetBasicAuth(fs.Config.User, fs.Config.Password)
 	}
 
-	hdfsData, err := requestHdfsData(fs.client, *req)
+	hdfsData, err := fs.requestHdfsData(*req)
 	if err != nil {
 		return -1, err
 	}
